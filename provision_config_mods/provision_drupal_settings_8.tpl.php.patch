@@ -1,0 +1,11 @@
+--- provision_drupal_settings_8.tpl.php.orig	2019-01-09 08:01:53.000000000 -0800
++++ provision_drupal_settings_8.tpl.php	2019-04-02 14:38:02.589051623 -0700
+@@ -126,7 +126,7 @@
+   ini_set('session.gc_probability', 1);
+   ini_set('session.gc_divisor', 100);
+   ini_set('session.gc_maxlifetime', 200000);
+-  ini_set('session.cookie_lifetime', 2000000);
++  ini_set('session.cookie_lifetime', 28800);
+ 
+   /**
+   * Set the umask so that new directories created by Drupal have the correct permissions

@@ -1,0 +1,11 @@
+--- provision_drupal.drush.inc.orig	2018-05-02 06:57:50.000000000 -0700
++++ provision_drupal.drush.inc	2018-07-19 13:21:23.084389130 -0700
+@@ -130,7 +130,7 @@
+     }
+ 
+     // Sync all filesystem changes to the remote server.
+-    d()->service('http')->sync(d()->site_path, $options);
++//    d()->service('http')->sync(d()->site_path, $options);
+ 
+     // Reset the exclude-path option
+     if(!is_null($exclude)) {

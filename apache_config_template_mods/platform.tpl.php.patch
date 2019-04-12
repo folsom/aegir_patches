@@ -1,0 +1,13 @@
+--- platform.tpl.php.orig	2019-03-28 16:47:42.131320969 -0700
++++ platform.tpl.php	2019-03-28 16:59:35.921577612 -0700
+@@ -1,7 +1,7 @@
+ <Directory <?php print $this->root; ?>>
+-    Order allow,deny
+-    Allow from all
+-    Satisfy All
++#    Order allow,deny
++#    Allow from all
++#    Satisfy All
+     Require all granted
+ 
+ <?php print $extra_config; ?>

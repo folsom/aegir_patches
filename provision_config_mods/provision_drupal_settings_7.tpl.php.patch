@@ -1,0 +1,11 @@
+--- provision_drupal_settings_7.tpl.php.orig	2019-04-02 14:21:40.088882562 -0700
++++ provision_drupal_settings_7.tpl.php	2019-04-02 14:37:48.853531572 -0700
+@@ -128,7 +128,7 @@
+   ini_set('session.gc_probability', 1);
+   ini_set('session.gc_divisor', 100);
+   ini_set('session.gc_maxlifetime', 200000);
+-  ini_set('session.cookie_lifetime', 2000000);
++  ini_set('session.cookie_lifetime', 28800);
+ 
+ 
+   /**

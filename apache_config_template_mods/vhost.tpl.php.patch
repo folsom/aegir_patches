@@ -1,0 +1,20 @@
+--- vhost.tpl.php.orig	2019-01-09 08:01:53.000000000 -0800
++++ vhost.tpl.php	2019-03-28 17:36:05.750816677 -0700
+@@ -12,7 +12,7 @@
+ 
+   DocumentRoot <?php print $this->root; ?>
+ 
+-  ServerName <?php print $this->uri; ?>
++  ServerName https://<?php print $this->uri; ?>
+ 
+   SetEnv db_type  <?php print urlencode($db_type); ?>
+ 
+@@ -87,7 +87,7 @@
+       <Files *>
+         SetHandler This_is_a_Drupal_security_line_do_not_remove
+       </Files>
+-      Deny from all
++      Require all denied
+       Options None
+       Options +FollowSymLinks
+ 

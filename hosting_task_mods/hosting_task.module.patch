@@ -1,0 +1,64 @@
+--- hosting_task.module.orig	2018-07-11 17:21:02.000000000 -0700
++++ hosting_task.module	2018-08-29 09:52:24.947481201 -0700
+@@ -95,6 +95,22 @@
+ }
+ 
+ /**
++ * Implements hook_form_alter().
++ */
++function hosting_task_form_alter(&$form, &$form_state, $form_id) {
++  switch ($form_id) {
++    case 'hosting_settings':
++      $form['hosting_task_custom_platform_tasks'] = array(
++        '#type' => 'textfield',
++        '#title' => t('Custom platform tasks'),
++        '#description' => t('Space-delimited list of additional platform tasks to be displayed in the platform task list.'),
++        '#default_value' => preg_replace("/\s+/", " ", trim(variable_get('hosting_task_custom_platform_tasks', ''))),
++      );
++      break;
++  }
++}
++
++/**
+  * Read additional task log data, served via AJAX.
+  */
+ function hosting_task_log_ajax($node, $last_position, $id) {
+@@ -308,6 +324,22 @@
+       }
+     }
+     if ($node->type == 'platform') {
++
++      // If any custom platform tasks were added via hosting settings, make sure they are existing
++      // platform tasks and create an array that will be merged with the hard-coded of allowed
++      // platform tasks.
++      $custom_platform_tasks = array();
++      $custom_platform_tasks_variable = variable_get('hosting_task_custom_platform_tasks', '');
++      if ($custom_platform_tasks_variable != '') {
++        $tasks = hosting_available_tasks('platform');
++
++        foreach (preg_split("/\s/", $custom_platform_tasks_variable) as $custom_task) {
++          if (isset($tasks[$custom_task])) {
++            $custom_platform_tasks[] = $custom_task;
++          }
++        }
++      }
++
+       // If the user can't edit this node, he can't create tasks on it.
+       if (!node_access('update', $node, $GLOBALS['user'])) {
+         return FALSE;
+@@ -319,13 +351,13 @@
+       // If the platform's been locked, we can unlock it, delete, batch migrate existing sites or verify.
+       if ($node->platform_status == HOSTING_PLATFORM_LOCKED) {
+         $platform_tasks = array('verify', 'unlock', 'delete', 'migrate');
+-        return (in_array($task, $platform_tasks));
++        return (in_array($task, array_merge($platform_tasks, $custom_platform_tasks)));
+       }
+       else {
+         // If the platform's unlocked, we can lock it, delete it or batch migrate sites
+         $platform_tasks = array('verify', 'lock', 'delete', 'migrate');
+       }
+-      return (in_array($task, $platform_tasks));
++      return (in_array($task, array_merge($platform_tasks, $custom_platform_tasks)));
+     }
+     if ($node->type === 'server') {
+       // If the user can't edit this node, he can't create tasks on it.

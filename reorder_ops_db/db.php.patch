@@ -1,0 +1,59 @@
+--- db.php.orig	2017-10-17 16:57:21.622713734 -0700
++++ db.php	2017-10-17 17:09:06.363057641 -0700
+@@ -100,19 +100,20 @@
+       return FALSE;
+     }
+ 
+-    foreach ($this->grant_host_list() as $db_grant_host) {
+-      drush_log(dt("Granting privileges to %user@%client on %database", array('%user' => $db_user, '%client' => $db_grant_host, '%database' => $db_name)));
+-      if (!$this->grant($db_name, $db_user, $db_passwd, $db_grant_host)) {
+-        drush_set_error('PROVISION_CREATE_DB_FAILED', dt("Could not create database user @user", array('@user' => $db_user)));
+-      }
+-      drush_log(dt("Granted privileges to %user@%client on %database", array('%user' => $db_user, '%client' => $db_grant_host, '%database' => $db_name)), 'success');
+-    }
+-
+     $this->create_database($db_name);
+     $status = $this->database_exists($db_name);
+ 
+     if ($status) {
+       drush_log(dt('Created @name database', array("@name" => $db_name)), 'success');
++
++      foreach ($this->grant_host_list() as $db_grant_host) {
++        drush_log(dt("Granting privileges to %user@%client on %database", array('%user' => $db_user, '%client' => $db_grant_host, '%database' => $db_name)));
++
++        if (!$this->grant($db_name, $db_user, $db_passwd, $db_grant_host)) {
++          drush_set_error('PROVISION_CREATE_DB_FAILED', dt("Could not create database user @user", array('@user' => $db_user)));
++        }
++        drush_log(dt("Granted privileges to %user@%client on %database", array('%user' => $db_user, '%client' => $db_grant_host, '%database' => $db_name)), 'success');
++      }
+     }
+     else {
+       drush_set_error('PROVISION_CREATE_DB_FAILED', dt("Could not create @name database", array("@name" => $db_name)));
+@@ -129,6 +130,13 @@
+     }
+     extract($creds);
+ 
++    foreach ($this->grant_host_list() as $db_grant_host) {
++      drush_log(dt("Revoking privileges of %user@%client from %database", array('%user' => $db_user, '%client' => $db_grant_host, '%database' => $db_name)));
++      if (!$this->revoke($db_name, $db_user, $db_grant_host)) {
++        drush_log(dt("Failed to revoke user privileges"), 'warning');
++      }
++    }
++
+     if ( $this->database_exists($db_name) ) {
+       drush_log(dt("Dropping database @dbname", array('@dbname' => $db_name)));
+       if (!$this->drop_database($db_name)) {
+@@ -140,13 +148,6 @@
+      drush_set_error('PROVISION_DROP_DB_FAILED');
+      return FALSE;
+     }
+-
+-    foreach ($this->grant_host_list() as $db_grant_host) {
+-      drush_log(dt("Revoking privileges of %user@%client from %database", array('%user' => $db_user, '%client' => $db_grant_host, '%database' => $db_name)));
+-      if (!$this->revoke($db_name, $db_user, $db_grant_host)) {
+-        drush_log(dt("Failed to revoke user privileges"), 'warning');
+-      }
+-    }
+   }
+ 
+ 

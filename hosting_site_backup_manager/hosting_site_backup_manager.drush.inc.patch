@@ -1,0 +1,11 @@
+--- hosting_site_backup_manager.drush.inc.orig	2017-08-24 02:26:38.000000000 -0700
++++ hosting_site_backup_manager.drush.inc	2017-10-17 13:15:21.804474183 -0700
+@@ -62,7 +62,7 @@
+     provision_file()->create_dir($backupdir, dt('General backup export directory'), 0751);
+   }
+ 
+-  if (drush_shell_cd_and_exec($backupdir, 'ln %s .', $backup)) {
++  if (drush_shell_cd_and_exec($backupdir, 'cp %s .', $backup)) {
+     drush_log(dt('Backup exported', array()), 'ok');
+   }
+   else {

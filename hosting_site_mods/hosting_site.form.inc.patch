@@ -1,0 +1,114 @@
+--- hosting_site.form.inc.orig	2018-02-19 15:17:48.000000000 -0800
++++ hosting_site.form.inc	2018-02-20 09:54:32.000000000 -0800
+@@ -197,6 +197,18 @@
+  * Implements hook_form().
+  */
+ function hosting_site_form($node, &$form_state) {
++
++    // If this isn't a new node, we already have profile and platform information and so can save a lot of time
++    // by not doing the work of gathering the profiles and platforms lists.
++  if (!isset($node->nid) || isset($node->is_new)) {
++      // This is a new node.
++    $is_new_node = TRUE;
++  }
++  else {
++      // This is not a new node.
++    $is_new_node = FALSE;
++  }
++
+   $form['#node'] = $node;
+ 
+   if (isset($node->nid)) {
+@@ -229,14 +241,16 @@
+     '#autocomplete_path' => 'hosting_client/autocomplete/client',
+   ), 'filter_xss', $editable);
+ 
+-  // Install profiles.
+-  $profiles = hosting_get_profiles();
+-  foreach ($profiles as $id => $name) {
+-    $profile = hosting_package_instance_load(array('p.nid' => $id));
+-    $profiles[$id] = theme('hosting_site_profile', array('profile' => $profile, 'html' => TRUE));
+-  }
+-  natcasesort($profiles);
+-  reset($profiles);
++  if ($is_new_node) {
++    // Install profiles.
++    $profiles = hosting_get_profiles();
++    foreach ($profiles as $id => $name) {
++      $profile = hosting_package_instance_load(array('p.nid' => $id));
++      $profiles[$id] = theme('hosting_site_profile', array('profile' => $profile, 'html' => TRUE));
++    }
++    natcasesort($profiles);
++    reset($profiles);
++  } // if
+ 
+   _hosting_site_field($form, $node, 'profile', array(
+     '#type' => 'radios',
+@@ -264,37 +278,40 @@
+     $selected_profile = hosting_package_instance_load(array('p.nid' => hosting_get_default_profile()))->nid;
+   }
+ 
+-  // Load platforms for the selected profile.
+-  $platforms = hosting_get_profile_platforms($selected_profile);
++  if ($is_new_node) {
++    $q = drupal_get_query_parameters();
++    if (isset($q['platform']) && is_numeric($q['platform'])) {
++      $default_platform = $q['platform'];
++
++      // Since platform is predetermined, limit the options based on the selected platform.
++      $selected_profile = hosting_package_instance_load(array('platform' => $default_platform, 'package_type' => 'profile'))->nid;
++      $platforms = hosting_get_profile_platforms($selected_profile, FALSE, $default_platform);
++
++      $form['profile']['#default_value'] = $selected_profile;
++      $form['profile']['#options'] = hosting_get_profiles($default_platform);
++      foreach ($form['profile']['#options'] as $id => &$name) {
++        $profile = hosting_package_instance_load(array('p.nid' => $id));
++        $name = theme('hosting_site_profile', array('profile' => $profile, 'html' => TRUE));
++      }
++      natcasesort($form['profile']['#options']);
++      reset($form['profile']['#options']);
+ 
+-  $q = drupal_get_query_parameters();
+-  if (isset($q['platform']) && is_numeric($q['platform'])) {
+-    $default_platform = $q['platform'];
+-
+-    // Since platform is predetermined, limit the options based on the selected platform.
+-    $selected_profile = hosting_package_instance_load(array('platform' => $default_platform, 'package_type' => 'profile'))->nid;
+-    $platforms = hosting_get_profile_platforms($selected_profile);
+-
+-    $form['profile']['#default_value'] = $selected_profile;
+-    $form['profile']['#options'] = hosting_get_profiles($default_platform);
+-    foreach ($form['profile']['#options'] as $id => &$name) {
+-      $profile = hosting_package_instance_load(array('p.nid' => $id));
+-      $name = theme('hosting_site_profile', array('profile' => $profile, 'html' => TRUE));
++      // Set page title.
++      drupal_set_title(t('Create site on platform @name', array('@name' => $platforms[$default_platform])));
+     }
+-    natcasesort($form['profile']['#options']);
+-    reset($form['profile']['#options']);
++    else {
++      // Load platforms for the selected profile.
++      $platforms = hosting_get_profile_platforms($selected_profile);
+ 
+-    // Set page title.
+-    drupal_set_title(t('Create site on platform @name', array('@name' => $platforms[$default_platform])));
+-  }
+-  else {
+-    $default_platform = NULL;
+-  }
++      $default_platform = NULL;
++    }
++
++    if (!array_key_exists($default_platform, $platforms)) {
++      // Default to the first platform, if none was passed in the path.
++      $default_platform = current(array_keys($platforms));
++    }
++  } // if
+ 
+-  if (!array_key_exists($default_platform, $platforms)) {
+-    // Default to the first platform, if none was passed in the path.
+-    $default_platform = current(array_keys($platforms));
+-  }
+   _hosting_site_field($form, $node, 'platform', array(
+     '#type' => 'radios',
+     '#title' => t('Platform'),

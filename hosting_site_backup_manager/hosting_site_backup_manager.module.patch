@@ -1,0 +1,28 @@
+diff --git a/hosting_site_backup_manager.module b/hosting_site_backup_manager.module
+index bd34da8..e5b5100 100755
+--- a/hosting_site_backup_manager.module
++++ b/hosting_site_backup_manager.module
+@@ -426,7 +426,7 @@ function hosting_site_backup_manager_backups_table($site) {
+   $headers[] = t('Backup');
+   $headers[] = array(
+     'data' => t('Actions'),
+-    'class' => 'hosting-actions',
++    'class' => array('hosting-actions'),
+   );
+ 
+   $rows = array();
+@@ -473,12 +473,12 @@ function hosting_site_backup_manager_backups_table($site) {
+ 
+     $row['actions'] = array(
+       'data' => implode('', $actions),
+-      'class' => 'hosting-actions',
++      'class' => array('hosting-actions'),
+     );
+ 
+     $rows[] = array(
+       'data' => $row,
+-      'class' => '',
++      'class' => array(),
+     );
+   }
+

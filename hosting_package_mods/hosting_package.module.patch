@@ -1,0 +1,72 @@
+--- hosting_package.module.orig	2017-09-21 00:59:34.000000000 -0700
++++ hosting_package.module	2017-10-17 11:38:43.303974258 -0700
+@@ -128,7 +128,19 @@
+ /**
+  * @todo document this function
+  */
+-function hosting_get_profile_platforms($profile, $check_old_short_name = FALSE) {
++function hosting_get_profile_platforms($profile, $check_old_short_name = FALSE, $platform_nid_single = NULL) {
++  global $user;
++
++    // Get the clients that the user belongs to.  We'll use this to
++    // determine which platforms need to be loaded and examined before
++    // returning them.
++  $user_clients_obj = hosting_get_client_from_user($user->uid);
++  $user_clients_array = array();
++
++  foreach($user_clients_obj as $key => $value) {
++    $user_clients_array[] = $key;
++  } // foreach
++
+   $defaults = array('default', 'standard', 'minimal', 'testing');
+ 
+   $platforms = array();
+@@ -148,6 +160,37 @@
+     )));
+   }
+   foreach ($instances as $iid => $instance) {
++      // If we're working with a single platform NID that was passed in, we only
++      // need to run through this iteration of the loop this instance's reference
++      // ID is the NID of the platform.
++    if (!is_null($platform_nid_single) && ($platform_nid_single != $instance->rid)) {
++      continue;
++    } // if
++
++      // Get the status of the platform.  If it isn't enabled (not locked or deleted), it's not available
++      // for use, so skip it.
++    $result = db_query("SELECT status FROM {hosting_platform} WHERE nid = :nid", array(':nid' => $instance->rid));
++    $status = $result->fetchField();
++    if ($status != HOSTING_PLATFORM_ENABLED) {
++      continue;
++    } // if
++
++      // Build an array of all clients that have access to this platform.
++    $platform_nid = $instance->rid;
++    $result = db_query("SELECT cid FROM {hosting_platform_client_access} where pid=:pid",
++                       array(':pid' => $platform_nid));
++    $platform_clients = array();
++    foreach ($result as $row) {
++      $platform_clients[] = $row->cid;
++    } // foreach
++
++      // If the user isn't assigned to a client with access to this platform, we're done.  This saves the overhead
++      // of diving further into the platform node.  If the user is admin, all platforms should be returned and
++      // the user object array of clients doesn't seem to be accurate.
++    if (!(count(array_intersect($user_clients_array, $platform_clients)) || $user->uid == 1)) {
++      continue;
++    } // if
++
+     $platform = node_load($instance->rid);
+     // this is one of the default profiles
+     if (in_array($instance->short_name, $defaults) &&
+@@ -156,9 +199,7 @@
+       // there are other profiles available on this platform. skip this.
+       continue;
+     }
+-    if ($platform->platform_status == HOSTING_PLATFORM_ENABLED) {
+-      $platforms[$instance->rid] = $platform->title;
+-    }
++    $platforms[$instance->rid] = $platform->title;
+   }
+ 
+   return $platforms;

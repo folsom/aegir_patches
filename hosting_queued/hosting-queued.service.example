@@ -1,0 +1,13 @@
+[Unit]
+Description=Queue runner daemon for Aegir...This module allows the Hosting tasks queue for the Aegir project to be 'daemonized' so that tasks are run as soon as possible instead of waiting for a cron run. This makes Aegir appear much more responsive.
+After=network.target local-fs.target
+
+[Service]
+Environment="PATH=/opt/rh/rh-php56/root/usr/bin:/opt/rh/rh-php56/root/usr/sbin:/opt/rh/httpd24/root/usr/bin:/opt/rh/httpd24/root/usr/sbin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/var/aegir/.local/bin:/var/aegir/bin"
+User=aegir
+PIDFile=/var/run/hosting-queued.pid
+Restart=on-failure
+ExecStart=/usr/local/bin/drush --quiet @hostmaster hosting-queued 
+
+[Install]
+WantedBy=multi-user.target

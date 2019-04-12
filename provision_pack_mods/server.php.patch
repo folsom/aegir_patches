@@ -1,0 +1,42 @@
+--- server.php.orig	2018-05-02 06:57:50.000000000 -0700
++++ server.php	2019-02-13 16:23:40.800861459 -0800
+@@ -134,6 +134,20 @@
+     return $services;
+   }
+ 
++  /**
++   * Retrieve a list of service types associated/enabled with this server.
++   * Derek - 05/23/12
++   */
++  function get_service_types() {
++    $services = array();
++    foreach ($this->services as $service => $object) {
++      if(get_class($object) != "Provision_Service_null") {
++        $services[$service] = $service;
++      }
++    }
++    return $services;
++  }
++
+ 
+   function verify() {
+     $this->type_invoke('verify');
+@@ -169,10 +183,14 @@
+    *   call).
+    */
+   function sync($path = NULL, $additional_options = array()) {
+-    if (!provision_is_local_host($this->remote_host)) {
+-      if (is_null($path)) {
+-        $path = $this->config_path;
+-      }
++    if (is_null($path)) {
++      $path = $this->config_path;
++    }
++
++    // UO patch:  Since our platforms are on NFS mounts we don't need to do a sync to the remote
++    // hosts.
++    if (!provision_is_local_host($this->remote_host) && 
++          !(preg_match("/^\/var\/aegir\/cluster/", $path) || preg_match("/^\/var\/aegir\/is-cluster/", $path))) {
+ 
+       if (provision_file()->exists($path)->status()) {
+         $default_options = array(

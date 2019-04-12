@@ -1,0 +1,18 @@
+--- pack.php.orig	2017-09-29 11:14:23.000000000 -0700
++++ pack.php	2017-10-17 16:43:03.287937878 -0700
+@@ -48,7 +48,14 @@
+     $ret = TRUE;
+     foreach ($servers as $server) {
+       // If any methods return false, return false for the whole operation.
+-      $result = call_user_func_array(array(d($server)->service('http', $this->context), $method), $args);
++
++      // Get all service types for this server
++      $services = d($server)->get_service_types();
++
++      foreach($services as $service) {
++        $result = call_user_func_array(array(d($server)->service($service, $this->context), $method), $args);
++      }
++
+       $ret = $ret && $result;
+     }
+     return $ret;

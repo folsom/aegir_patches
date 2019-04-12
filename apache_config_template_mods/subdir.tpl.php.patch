@@ -1,0 +1,11 @@
+--- subdir.tpl.php.orig	2019-01-09 08:01:53.000000000 -0800
++++ subdir.tpl.php	2019-03-28 16:47:42.137321227 -0700
+@@ -41,7 +41,7 @@
+ # a .htaccess in those directories, but we explicitly ignore those
+ <Directory ~ "sites/.*/private">
+    SetHandler This_is_a_Drupal_security_line_do_not_remove
+-   Deny from all
++   Require all denied
+    Options None
+    Options +FollowSymLinks
+ </Directory>

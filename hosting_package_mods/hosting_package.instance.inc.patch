@@ -1,0 +1,16 @@
+--- hosting_package.instance.inc.orig	2019-03-12 13:34:14.578430153 -0700
++++ hosting_package.instance.inc	2019-03-13 16:26:33.552412605 -0700
+@@ -233,11 +233,13 @@
+   if (!is_null($instance_id) && !isset($instances[$instance_id])) {
+     $languages = array('en' => 'en');
+ 
++/*
+     // load language options: if argument is null, load all language options
+     $lang_result = db_query("SELECT DISTINCT(language) FROM {hosting_package_languages} WHERE iid = :iid", array(':iid' => $instance_id));
+     while ($language = $lang_result->fetch()) {
+       $languages[$language->language] = _hosting_language_name($language->language);
+     }
++*/
+ 
+     $instances[$instance_id] = $languages;
+   }
